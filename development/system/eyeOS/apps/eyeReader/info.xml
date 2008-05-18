@@ -1,0 +1,5 @@
+<package>
+	<name>eyeReader</name>
+	<type>Application</type>
+	<icon>index.php?extern=apps/eyeX/themes/default/icons/48x48/eyeReader.png</icon>
+</package>

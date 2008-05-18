@@ -1,0 +1,177 @@
+<?php
+/*
+                                  ____   _____ 
+                                 / __ \ / ____|
+                  ___ _   _  ___| |  | | (___  
+                 / _ \ | | |/ _ \ |  | |\___ \ 
+                |  __/ |_| |  __/ |__| |____) |
+                 \___|\__, |\___|\____/|_____/ 
+                       __/ |                   
+                      |___/              1.6
+
+                     Web Operating System
+                           eyeOS.org
+
+             eyeOS Engineering Team - eyeOS.org/whoarewe
+
+     eyeOS is released under the GNU Afero General Public License Version 3 (AGPL3)
+            provided with this release in license.txt
+             or via web at gnu.org/licenses/gpl.txt
+
+        Copyright 2005-2008 eyeOS Team (team@eyeos.org)         
+*/
+
+function eyeReader_run($params=null) {
+	global $checknum,$myPid;
+	global $currentUser;
+	
+	if ($_SESSION['lang'])$lang = $_SESSION['lang']; else $lang = 'en';
+	include_once(EYE_ROOT.'/'.APP_DIR.'/eyeReader/events'.EYE_CODE_EXTENSION);
+	$ver = eyeReader_getVer();
+	
+	//Main Window
+	$myWindow = new Window(array(
+		'title'=>'eyeReader',
+		'name'=>'WND_1',
+		'father' => 'eyeApps',
+		'type'=>3,
+		'y'=>35,
+		'x'=>0,
+		'cent'=>2,
+		'width'=>800,
+		'height'=>500
+	));
+	$myWindow->show();
+	
+	//Book Window
+	$myWindow2 = new Window(array(
+		'name'=>'WND_2',
+		'father' => 'WND_1_Content',
+		'type'=>100,
+		'width'=>580,
+		'height'=>425,
+		'x'=>200,
+		'y'=>45
+	));
+	$myWindow2->show();
+	
+	//Folder and Book Window
+	$myWindow3 = new Window(array(
+		'name'=>'WND_3',
+		'father'=>'WND_1_Content',
+		'type'=>100,
+		'width'=>200,
+		'height'=>425,
+		'x'=>8,
+		'y'=>45
+	));
+	$myWindow3->show();
+
+	
+	//Apps Window
+	$myWindow5 = new Window(array(
+		'name'=>'WND_5',
+		'father'=>'WND_1_Content',
+		'type'=>100,
+		'width'=>200,
+		'height'=>425,
+		'x'=>8,
+		'y'=>45
+	));
+	$myWindow5->show();
+	service('eyex','runjs',array('js' => 'document.getElementById("'.$myPid.'_WND_5").style.display="none"'));
+
+	//Toolbar
+	$myToolbar = new Toolbar(array(
+		'name'=>'myBar',
+		'father'=>'WND_1_Content'
+	));
+	$myToolbar->show();
+	$myToolbar->addItem('home','index.php?extern=' . THEMES_DIR . '/' . $_SESSION['usertheme'] . '/images/toolbar/home.png','Home');
+	$myToolbar->addItem('about','index.php?extern=' . THEMES_DIR . '/' . $_SESSION['usertheme'] . '/images/toolbar/help.png','About');
+	if($currentUser == ROOTUSER){
+		$myToolbar->addLine();
+	$myToolbar->addItem('restart','index.php?extern=' . THEMES_DIR . '/' . $_SESSION['usertheme'] . '/images/toolbar/refresh.png','Restart');
+	}
+
+	//Tree Box
+	$myBox1 = new Box(array(
+		'name'=>'BOX_1',
+		'father'=>'WND_3_Content',
+		'x'=>0,
+		'y'=>0,
+		'width'=>175,
+		'height'=>400,
+		'title'=>'Topics'
+	));
+	$myBox1->show();
+
+	//Tree Window (for scrolling)
+	$myWindow4 = new Window(array(
+		'name'=>'WND_BOX_1',
+		'father' => 'BOX_1',
+		'y'=>5,
+		'x'=>5,
+		'width'=>165,
+		'height'=>390,
+		'type'=>100
+	));
+	$myWindow4->show();
+	
+	$myTree = new Tree(array(
+		'name'=>'filesTree',
+		'father'=>'WND_BOX_1_Content',
+		'width'=>150,
+		'x'=>0,
+		'y'=>0,
+		'clickTree'=>1,
+		'signal'=>'goto'
+	));
+	$myTree->show();
+	
+	$myUdir = EYE_ROOT.'/'.APP_DIR.'/'.SHARE_USER_DIR.'/eyeReader/'.$ver;
+	drawTree($myTree,'filesTree',$myUdir);
+	$myTree->processList();
+	
+	$myLabel1 = new Label(array(
+		'name'=>'label1',
+		'father'=>'WND_2_Content',
+		'y'=>0,
+		'x'=>0,
+		'width'=>580,
+		'height'=>420,
+		'text'=>'',
+		'allowHTML'=>1
+	));
+	$myLabel1->show(0);
+
+	if($params[0]){
+		$open = $params[0];
+	}else{
+		$open = "Welcome/".$lang;
+	}
+	eyeReader_on_goto(array($open));
+}
+
+function eyeReader_end($params=null) {
+	reqLib('eyeWidgets','unserialize');
+}
+
+function drawTree($object,$tree,$dir) {
+	global $currentUser;
+	$oldUser = $currentUser;
+	$currentUser = ROOTUSER;
+	$content = vfs('getDirContent',array($dir));
+	if(is_array($content)) {
+		foreach($content as $value)	{
+			if(is_dir($value)) {
+				$object->addSubList('item_'.$dir,'list_'.$dir);
+				$object->addItem($tree,'item_'.$value,utf8_basename($value));
+				drawTree($object,'list_'.$value,$value);
+			}
+		}
+	}
+	$currentUser = $oldUser;
+}
+
+?>

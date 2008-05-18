@@ -1,0 +1,9 @@
+<?php
+global $language;
+$language['About'] = 'Sobre';
+$language['Applications'] = 'Aplicações';
+$language['Apps-Folders'] = 'Aplicações-pastas';
+$language['Ask for help'] = 'Pedir ajuda';
+$language['Author'] = 'Autor';
+$language['Folders'] = 'Pastas';
+?>
