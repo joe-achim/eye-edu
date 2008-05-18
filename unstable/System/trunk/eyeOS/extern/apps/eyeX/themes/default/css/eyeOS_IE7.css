@@ -1,3 +1,0 @@
-.eyeDock_center {
-	width: expression(this.parentNode.offsetWidth-18-18);
-}
