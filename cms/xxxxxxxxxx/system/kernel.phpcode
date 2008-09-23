@@ -41,7 +41,7 @@ unset($browserInfo);
 
 kernel::loadLibraries();
 
-// load configs?
+output::prepareOutput();
 
-// start now!
+output::doOutput();
 ?>
